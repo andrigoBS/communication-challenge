@@ -1,0 +1,62 @@
+version: "3.9"
+
+volumes:
+  mysql-data:
+
+services:
+  ##### node api #####
+  node:
+    image: node:lts-alpine
+    working_dir: /usr/src/node
+    restart: always
+    environment:
+      SERVER_NAME: "${PROJECT_NAME}"
+      SERVER_HOST: "${HOST_NAME}"
+      SERVER_PORT: "${NODE_PORT}"
+      TYPEORM_CONNECTION: "mysql"
+      TYPEORM_HOST: "${HOST_NAME}"
+      TYPEORM_PORT: "${DATABASE_PORT}"
+      TYPEORM_DATABASE: "${DATABASE_NAME}"
+      TYPEORM_USERNAME: "${DATABASE_USER}"
+      TYPEORM_PASSWORD: "${DATABASE_PASSWORD}"
+      TYPEORM_ENTITIES: "build/src/entity/**/*.js"
+      TYPEORM_ENTITIES_DIR: "src/entity"
+      TYPEORM_MIGRATIONS_DIR: "src/migration"
+      TYPEORM_SYNCHRONIZE: "true"
+      TYPEORM_LOGGING: "true"
+      NODE_ENV: "development"
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - ./src/:/usr/src/node/src/
+      - ./public/:/usr/src/node/public/
+      - ./package.json:/usr/src/node/package.json
+      - ./package-lock.json:/usr/src/node/package-lock.json
+      - ./tsconfig.json:/usr/src/node/tsconfig.json
+      - ./node_modules/:/usr/src/node/node_modules/
+    ports:
+      - "${NODE_PORT}:${NODE_PORT}"
+    networks:
+      - communication_net
+
+  ##### mysql #####
+  mysql:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: "${DATABASE_NAME}"
+      MYSQL_USER: "${DATABASE_USER}"
+      MYSQL_PASSWORD: "${DATABASE_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DATABASE_PASSWORD}"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "${DATABASE_PORT}:3306"
+    networks:
+      - communication_net
+
+networks:
+  communication_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "${HOST_NAME}/24"
