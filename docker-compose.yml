@@ -11,7 +11,7 @@ services:
     restart: always
     environment:
       SERVER_NAME: "${PROJECT_NAME}"
-      SERVER_HOST: "${HOST_NAME}"
+      SERVER_HOST: "localhost"
       SERVER_PORT: "${NODE_PORT}"
       TYPEORM_CONNECTION: "mysql"
       TYPEORM_HOST: "${HOST_NAME}"

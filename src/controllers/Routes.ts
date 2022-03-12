@@ -1,4 +1,5 @@
 import {Router} from 'express'
+import CommunicationController from "./communication/CommunicationController";
 
 export default class Routes {
     private readonly router: Router
@@ -6,6 +7,7 @@ export default class Routes {
     constructor() {
         this.router = Router()
 
+        this.router.use('/communication', new CommunicationController().getRouter())
     }
 
     public getRouter(): Router{
