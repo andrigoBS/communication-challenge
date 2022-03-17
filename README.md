@@ -1,9 +1,12 @@
 # Communication challenge
 ***
 ### Description
-**PT/BR:** Projeto desenvolvido para aprofundar conhecimentos com node.js, typescript, docker e etc. E para o desafio luizalabs
+**PT/BR:** Projeto desenvolvido para aprofundar conhecimentos com jest, unit tests, node.js, typescript, docker e etc. 
 
-**EN/US:** Project develop to improve knowledge with node.js, typescript, docker and more, and for luizalabs challenge
+**EN/US:** Project develop to improve knowledge with jest, unit tests, node.js, typescript, docker and more.
+
+### Swagger api documentation
+navigate to /docs, exemple http://localhost:8102/docs
 
 ### Main Dependencies
 - node ^14.0
@@ -12,6 +15,7 @@
 - swagger-autogen ^2.11
 - swagger-ui-express ^4.1
 - typescript ^4.4
+- jest ^27.5.1
 - Docker(optional) ^20.10
 - docker-compose(optional) ^3.9
 

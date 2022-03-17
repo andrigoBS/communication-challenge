@@ -16,19 +16,21 @@ services:
       TYPEORM_CONNECTION: "mysql"
       TYPEORM_HOST: "${HOST_NAME}"
       TYPEORM_PORT: "${DATABASE_PORT}"
+      TEST_DATABASE: "${TEST_DATABASE}"
+      COMMUNICATION_DATABASE: "${DATABASE_NAME}"
       TYPEORM_DATABASE: "${DATABASE_NAME}"
-      TYPEORM_USERNAME: "${DATABASE_USER}"
+      TYPEORM_USERNAME: "root"
       TYPEORM_PASSWORD: "${DATABASE_PASSWORD}"
       TYPEORM_ENTITIES: "build/src/entity/**/*.js"
       TYPEORM_ENTITIES_DIR: "src/entity"
-      TYPEORM_MIGRATIONS_DIR: "src/migration"
+      TYPEORM_MIGRATIONS_DIR: "src/migrations"
       TYPEORM_SYNCHRONIZE: "true"
-      TYPEORM_LOGGING: "true"
+      TYPEORM_LOGGING: "false"
       NODE_ENV: "development"
     command: sh -c "npm install && npm run dev"
     volumes:
       - ./src/:/usr/src/node/src/
-      - ./public/:/usr/src/node/public/
+      - ./tests/:/usr/src/node/tests/
       - ./package.json:/usr/src/node/package.json
       - ./package-lock.json:/usr/src/node/package-lock.json
       - ./tsconfig.json:/usr/src/node/tsconfig.json
@@ -47,6 +49,10 @@ services:
       MYSQL_USER: "${DATABASE_USER}"
       MYSQL_PASSWORD: "${DATABASE_PASSWORD}"
       MYSQL_ROOT_PASSWORD: "${DATABASE_PASSWORD}"
+    command: sh -c "
+        echo 'CREATE DATABASE IF NOT EXISTS ${DATABASE_NAME}; CREATE DATABASE IF NOT EXISTS ${TEST_DATABASE};' > /docker-entrypoint-initdb.d/init.sql;
+        /usr/local/bin/docker-entrypoint.sh --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      "
     volumes:
       - mysql-data:/var/lib/mysql
     ports:
