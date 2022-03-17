@@ -31,6 +31,7 @@ services:
     volumes:
       - ./src/:/usr/src/node/src/
       - ./tests/:/usr/src/node/tests/
+      - ./jest.config.ts:/usr/src/node/jest.config.ts
       - ./package.json:/usr/src/node/package.json
       - ./package-lock.json:/usr/src/node/package-lock.json
       - ./tsconfig.json:/usr/src/node/tsconfig.json
