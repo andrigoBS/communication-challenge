@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response, Router} from "express";
-import HttpStatus from "../../helpers/HttpStatus";
-import Communication, {CommunicationStatusEnum} from "../../entity/communication/Communication";
+import {HttpStatus} from "../../helpers/HttpStatus";
+import Communication from "../../entity/communication/Communication";
 
 export default class CommunicationController {
     private readonly router: Router
@@ -31,15 +31,20 @@ export default class CommunicationController {
                }
             */
             let {date, recipient, message, format} = req.body
-            let communication = new Communication();
-            communication.date = new Date(date)
-            communication.recipient = recipient
-            communication.message = message
-            communication.format = format
-            communication.status = CommunicationStatusEnum.SCHEDULED
-            await communication.save()
 
-            return res.status(HttpStatus.ok).json(communication)
+            try {
+                let communication = new Communication()
+                communication.date = new Date(date)
+                communication.recipient = recipient
+                communication.message = message
+                communication.format = format
+
+                await communication.save()
+
+                return res.status(HttpStatus.OK).json(communication)
+            }catch (error: any){
+                return res.status(HttpStatus.BAD_REQUEST).json({message: error.message})
+            }
         })
     }
 
@@ -49,15 +54,18 @@ export default class CommunicationController {
                #swagger.tags = ['Communication']
                #swagger.description = 'Endpoint para consultar o status de um agendamento pelo id'
             */
-            const communication = await Communication.findOne(req.params.id);
+            try {
+                const communication = await Communication.findOne(req.params.id)
 
-            console.log(communication);
+                if(!communication){
+                    return res.status(HttpStatus.NOT_FOUND).json({message: 'Communication Not Found'})
+                }
 
-            if(!communication){
-                return res.status(HttpStatus.notFound).json({message: 'Communication Not Found'})
+                return res.status(HttpStatus.OK).json(communication)
+            }catch (e: any){
+                console.log(e.message)
+                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'DB Not available'})
             }
-
-            return res.status(HttpStatus.ok).json(communication)
         })
     }
 
@@ -65,24 +73,22 @@ export default class CommunicationController {
         this.router.put('/:id', async (req: Request, res: Response, next: Function) => {
             /*
                 #swagger.tags = ['Communication']
-                #swagger.description = 'Endpoint para cacnelar um um agendamento pelo id'
+                #swagger.description = 'Endpoint para cancelar um agendamento pelo id'
             */
-            const communication = await Communication.findOne(req.params.id);
-
-            console.log(communication);
+            const communication = await Communication.findOne(req.params.id)
 
             if(!communication){
-                return res.status(HttpStatus.notFound).json({message: 'Communication Not Found'})
+                return res.status(HttpStatus.NOT_FOUND).json({message: 'Communication Not Found'})
             }
 
-            if(communication.status !== CommunicationStatusEnum.SCHEDULED){
-                return res.status(HttpStatus.conflict).json({message: "Communication can't altered, because status is not as scheduled"})
+            try {
+                communication.cancelSchedule()
+                await communication.save()
+
+                return res.status(HttpStatus.OK).json(communication)
+            }catch (error: any) {
+                return res.status(HttpStatus.BAD_REQUEST).json({message: error.message})
             }
-
-            communication.status = CommunicationStatusEnum.CANCELED
-            await communication.save()
-
-            return res.status(HttpStatus.ok).json(communication)
         })
     }
 }
