@@ -2,20 +2,22 @@ import "reflect-metadata"
 import Express, {Application} from 'express'
 import {createConnection} from "typeorm"
 import Dotenv from 'dotenv'
-import BodyParser from "body-parser"
 import Cors from 'cors'
-import Routes from './controllers/Routes'
+import Routes from './Routes'
 import SwaggerUI from "swagger-ui-express"
 
-class Server {
-    public readonly express: Application
+export class Server {
+    private readonly express: Application
+    private readonly isTest?: boolean
 
-    constructor() {
-        /* Setup dot env */
+    constructor(isTest?: boolean) {
+        this.isTest = isTest
         Dotenv.config()
         this.express = Express()
 
-        this.database()
+        if (!isTest) {
+            this.database()
+        }
         this.middlewares()
         this.routes()
     }
@@ -30,22 +32,27 @@ class Server {
 
     private middlewares(): void {
         /* Preparing middleware to parse different data formats */
-        this.express.use(BodyParser.json())
-        this.express.use(BodyParser.urlencoded({ extended: true, }))
+        this.express.use(Express.json())
+        this.express.use(Express.urlencoded({ extended: true, }))
         /* Setup CORS, adding this options to all response headers. */
         this.express.use(Cors())
     }
 
     /* connect db. see .env for typeorm config */
     private database(): void {
-        createConnection().then(() => console.log("DB Connect"))
+        createConnection().then(() => console.log("DB Connect to database "+process.env.TYPEORM_DATABASE))
     }
 
     private routes(): void {
         this.express.use(new Routes().getRouter())
-        const swaggerFile: any = require('../public/swaggerOutput.json')
+
+        const swaggerFilePath = this.isTest? '../../build/' : '../../'
+        const swaggerFile = require(swaggerFilePath+'swaggerOutput.json')
+
         this.express.use('/docs', SwaggerUI.serve, SwaggerUI.setup(swaggerFile))
     }
-}
 
-new Server().start();
+    public getExpress(){
+        return this.express
+    }
+}
